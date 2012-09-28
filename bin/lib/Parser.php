@@ -1422,10 +1422,10 @@ class Parser {
 
 		if ($this->class_name != '') {
       $cs = "$value : ";
-      $arrow = '=>';
+      $arrow = '->';
     }
     else {
-      $cs = "global.$value = ";
+      $cs = "exports.$value = ";
       $arrow = '->';
     }
     $this->func_name = $value;
@@ -1588,7 +1588,7 @@ class Parser {
    * 
    *  static x = array();
    * 
-   *  global.x = global.x ? {}
+   *  exports.x = exports.x ? {}
    * 
 	 *
 	 * @param string $value
@@ -1608,11 +1608,11 @@ class Parser {
 
       $tt = $this->get_next_token($token, $value);
       if ($this->is_next_token('=')) {
-        return "global.$value = global.$value ? ";
+        return "exports.$value = exports.$value ? ";
       }
       else {
         $this->put_back();
-        return "global.$value = global.$value ? {}";
+        return "exports.$value = exports.$value ? {}";
       }
     }
   }
