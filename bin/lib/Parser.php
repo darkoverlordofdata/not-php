@@ -6,37 +6,32 @@
 | Copyright DarkOverlordOfData (c) 2012
 +--------------------------------------------------------------------+
 |                                                                    
-| This file is a part of NodeLiter
+| This file is a part of Exspresso
 |                                                                    
-| NodeLiter is free software; you can copy, modify, and distribute 
-| it under the terms of the GNU General Public License Version 3     
+| Exspresso is free software; you can copy, modify, and distribute
+| it under the terms of the MIT License
 |                                                                    
 +--------------------------------------------------------------------+
 */
 /**
- * 
- * @package     NodeLiter 
- * @subpackage  Parser
- * @category    tools
- * @copyright   DarkOverlordOfData (c) 2012
- * @author      BruceDavidson@darkoverlordofdata.com
- * 
+ *	Parser Class
  *
- *	A recurive descent parser that reformats php to coffee-script
+ *    A recurive descent parser that reformats php to coffee-script
+ *
  */
 class Parser {
   
   // Token Types:
   const TT_END            = 0;
-	const TT_DELIMITER      = 1;
-	const TT_IDENTIFIER     = 2;
-	const TT_NUMBER         = 3;
-	const TT_KEYWORD        = 4;
-	const TT_STRING         = 5;
+  const TT_DELIMITER      = 1;
+  const TT_IDENTIFIER     = 2;
+  const TT_NUMBER         = 3;
+  const TT_KEYWORD        = 4;
+  const TT_STRING         = 5;
   const TT_COMMENT        = 6;
   const TT_MARKUP         = 7;
   const TT_IGNORE         = 99;
-  
+
   const SCOPE_SUPERGLOBAL = 0;
   const SCOPE_GLOBAL      = 1;
   const SCOPE_FUNCTION    = 2;
@@ -80,6 +75,7 @@ class Parser {
     '!'                           => Parser::TT_DELIMITER,
     '?'                           => Parser::TT_DELIMITER,
     ':'                           => Parser::TT_DELIMITER,
+    '"'                           => Parser::TT_DELIMITER,
     'T_ABSTRACT'                  => Parser::TT_IGNORE,
     'T_AND_EQUAL'                 => Parser::TT_DELIMITER,
     'T_ARRAY'                     => Parser::TT_KEYWORD,
@@ -177,9 +173,9 @@ class Parser {
     'T_PAAMAYIM_NEKUDOTAYIM'      => Parser::TT_DELIMITER,
     'T_PLUS_EQUAL'                => Parser::TT_DELIMITER,
     'T_PRINT'                     => Parser::TT_KEYWORD,
-    'T_PRIVATE'                   => Parser::TT_KEYWORD,
-    'T_PUBLIC'                    => Parser::TT_KEYWORD,
-    'T_PROTECTED'                 => Parser::TT_KEYWORD,
+    'T_PRIVATE'                   => Parser::TT_IGNORE,
+    'T_PUBLIC'                    => Parser::TT_IGNORE,
+    'T_PROTECTED'                 => Parser::TT_IGNORE,
     'T_REQUIRE'                   => Parser::TT_KEYWORD,
     'T_REQUIRE_ONCE'              => Parser::TT_KEYWORD,
     'T_RETURN'                    => Parser::TT_KEYWORD,
@@ -249,8 +245,64 @@ class Parser {
    * @var int 
    */
 	private $scope = Parser::SCOPE_GLOBAL;
-  
-  
+
+  private $is_config = FALSE;
+
+	/**
+	 * Convert
+	 *
+	 * @param string $path path to php source
+	 */
+  public function convert($path) {
+
+    try {
+
+      $filename = basename($path, '.php');
+
+$header = <<<DOC
+#+--------------------------------------------------------------------+
+#  {$filename}.coffee
+#+--------------------------------------------------------------------+
+#  Copyright DarkOverlordOfData (c) 2012
+#+--------------------------------------------------------------------+
+#
+#  This file is a part of Exspresso
+#
+#  Exspresso is free software you can copy, modify, and distribute
+#  it under the terms of the MIT License
+#
+#+--------------------------------------------------------------------+
+#
+# This file was ported from php to coffee-script using php2coffee
+#
+#
+
+
+DOC;
+
+      if (strpos($path, '/config/') !== FALSE) {
+        $this->is_config = TRUE;
+      }
+      elseif (strpos($path, '/language/') !== FALSE) {
+        $this->is_config = TRUE;
+      }
+
+      $this->load($path);
+      if (DUMP) $this->dump($path, $this->tokens);
+      $cs = $this->parse(0, count($this->tokens));
+      $cs = str_replace('parent::__construct', 'super', $cs);
+
+      return $header.$cs;
+    }
+    catch (Exception $e) {
+
+      echo $e->getMessage().' at '.$e->getLine().PHP_EOL;
+      echo $e->getTraceAsString();
+
+    }
+
+  }
+
 	/**
 	 * load - loads the token array
    * normalize whitespace
@@ -270,38 +322,59 @@ class Parser {
     /*
      * Generate tokens using the built-in php lexer
      */
-		$tokens = token_get_all(implode(PHP_EOL, $src));
+    $txt = implode(PHP_EOL, $src);
+    $txt = str_replace('**/', '*/', $txt);
+		$tokens = token_get_all($txt);
     /*
-     * Normalize whitespace
-     * One character per token
+     * Normalize whitespace: one character per token
+     * Normalize double-quoted strings: de-parse back into whole string.
+     *
      */
     $this->tokens = array();
+    $in_quote = FALSE;
+    $qu_value = "";
+
     foreach ($tokens as $token) {
       if (is_array($token)) {
-        if ($token[0] == T_COMMENT
-         || $token[0] == T_DOC_COMMENT) {
-          if (substr($token[1], -1) == PHP_EOL) {
-            $token[1] = trim($token[1]);
-            $this->tokens[] = $token;
-            $this->tokens[] = array(T_WHITESPACE, PHP_EOL);
+        if ($in_quote) {
+          $qu_value .= $token[1];
+        }
+        else {
+
+          if ($token[0] == T_COMMENT
+           || $token[0] == T_DOC_COMMENT) {
+            if (substr($token[1], -1) == PHP_EOL) {
+              $token[1] = trim($token[1]);
+              $this->tokens[] = $token;
+              $this->tokens[] = array(T_WHITESPACE, PHP_EOL);
+            }
+            else {
+              $this->tokens[] = $token;
+            }
+
+          }
+          elseif ($token[0] == T_WHITESPACE) {
+            $chars = str_split($token[1]);
+            foreach ($chars as $ch) {
+              $this->tokens[] = array(T_WHITESPACE, $ch);
+            }
           }
           else {
             $this->tokens[] = $token;
           }
-          
-        }
-        elseif ($token[0] == T_WHITESPACE) {
-          $chars = str_split($token[1]);
-          foreach ($chars as $ch) {
-            $this->tokens[] = array(T_WHITESPACE, $ch);
-          }
-        }
-        else {
-          $this->tokens[] = $token;
         }
       }
       else {
-        $this->tokens[] = $token;
+        if ($token === '"') $in_quote = ! $in_quote;
+        if ($in_quote) {
+          if ($token == '{') $token = '#{';
+          $qu_value .= $token;
+        }
+        else {
+          $this->tokens[] = $qu_value.$token;
+          $qu_value = '';
+        }
+
       }
     }
   }
@@ -332,32 +405,10 @@ class Parser {
       }
       $index++;
     }
-    file_put_contents($path.'.tokens', $out);
+    echo implode($out).PHP_EOL;
   }
   
   
-	/**
-	 * Convert 
-	 *
-	 * @param string $path path to php source
-	 */
-  public function convert($path) {
-    
-    try {
-      
-      $this->load($path);
-      //$this->dump($path, $this->tokens);
-      return $this->parse(0, count($this->tokens));
-    }
-    catch (Exception $e) {
-      
-      echo $e->getMessage().' at '.$e->getLine().PHP_EOL;
-      echo $e->getTraceAsString();
-      
-    }
-    
-  }
-
 
   /**
 	 * parse - entry point into the
@@ -377,6 +428,7 @@ class Parser {
 
     $tt = $this->get_token($token, $value);
     while ($this->pos <= $end) {
+      if ($tt == 0) break;
       $cs[] = $this->parse_token($tt, $token, $value);
       $tt = $this->get_next_token($token, $value);
     }
@@ -431,7 +483,12 @@ class Parser {
     if (is_string($token)) {
       $token = $token;
       $value = '';
-      return Parser::TT_DELIMITER;
+      if (strlen($token) == 1)
+        return Parser::TT_DELIMITER;
+      else
+        $value = $token;
+        $token = '"';
+        return Parser::TT_STRING;
     }
     else {
       $value = $token[1];
@@ -570,7 +627,7 @@ class Parser {
         $lines[$i] = '#'.$lines[$i];
       }
       else {
-        $lines[$i] = str_repeat("\t", $this->brace).'#'.$lines[$i];
+        $lines[$i] = str_repeat(TABS, $this->brace).'#'.$lines[$i];
       }
     }
     return implode(PHP_EOL, $lines);
@@ -608,6 +665,7 @@ class Parser {
       case '!':   return ' not ';
       case '?':   return ' then ';
       case ':':   return ' else ';  
+      case '"':   return '"';
       case 'T_AND_EQUAL':
         return '&=';
       case 'T_BOOLEAN_AND':
@@ -617,13 +675,13 @@ class Parser {
       case 'T_CONCAT_EQUAL':
         return '+=';
       case 'T_CURLY_OPEN':
-        return '{$';
+        return '#{';
       case 'T_DEC':
         return '--';
       case 'T_DIV_EQUAL':
         return '/=';
       case 'T_DOLLAR_OPEN_CURLY_BRACES':
-        return '${';
+        return '#{';
       case 'T_DOUBLE_ARROW':
         return ':';
       case 'T_DOUBLE_COLON':
@@ -676,7 +734,7 @@ class Parser {
         return '<<<';
       case 'T_WHITESPACE':
         if ($value == PHP_EOL) {
-          $value .= str_repeat("\t", $this->brace);
+          $value .= str_repeat(TABS, $this->brace);
         }
         return $value;
       case 'T_XOR_EQUAL':
@@ -698,20 +756,54 @@ class Parser {
     
     switch ($token) {
       case 'T_STRING':
+        if ($value == 'TRUE') {
+          return 'true';
+        }
+        elseif ($value == 'FALSE') {
+          return 'false';
+        }
+        elseif ($value == 'NULL') {
+          return 'null';
+        }
+        elseif ($value == 'func_num_args') {
+          $this->is_next_token('(', TRUE);
+          $this->is_next_token(')', TRUE);
+          return 'arguments.length';
+        }
+        elseif ($value == 'func_get_args') {
+          $this->is_next_token('(', TRUE);
+          $this->is_next_token(')', TRUE);
+          return 'arguments';
+        }
+        elseif ($value == 'func_get_arg') {
+          $this->is_next_token('(', TRUE);
+          $cs = $this->parse_until(')');
+          return 'arguments['.$cs.']';
+        }
+        elseif ($value == '__construct') {
+          return 'constructor';
+        }
+
         return $value;
       case 'T_VARIABLE':
 				if ($value == '$this') {
+          $tt = $this->get_next_token($token, $value);
+          if ($token != 'T_OBJECT_OPERATOR') {
+            $this->put_back();
+          }
+          else {
+            //  get member name
+            $tt = $this->get_next_token($token, $value);
+            $this->put_back();
+          }
 					return '@';
 				}
 				else {
-
 					$def = '';
-					if (CONFIG == TRUE && $this->scope == Parser::SCOPE_GLOBAL) {
-						if (!isset($this->var_def[$this->scope][$value])) {
-
-							$def = "$value = $value ? {}\n".str_repeat("\t", $this->brace);
-							$this->var_def[$this->scope][$value] = $this->scope;
-						}
+					if ($this->is_config == TRUE && $this->scope == Parser::SCOPE_GLOBAL) {
+					  if ($value == '$config' || $value == '$lang') {
+  					  $value = 'exports';
+					  }
 					}
 					return $def.$value;
 				}
@@ -807,8 +899,14 @@ class Parser {
       case 'T_ECHO':
         return 'echo '.$this->parse_statement();
       case 'T_ELSE':
-        $this->parse_block($comment, $body);
-        return 'else '.$comment.$body;
+        if ($this->is_next_token('T_IF'))  {
+          return 'else '.$this->parse_if($value);
+        }
+        else {
+          $this->put_back();
+          $this->parse_block($comment, $body);
+          return 'else '.$comment.$body;
+        }
       case 'T_ELSEIF':
         return 'else '.$this->parse_if($value);
       case 'T_EMPTY':
@@ -830,31 +928,34 @@ class Parser {
       case 'T_EVAL':
         return 'eval'.$this->parse_parens();
       case 'T_EXIT':
+        return 'die ';
+
         $cs = $this->parse_statement();
         if ($cs == '') 
           return 'die()';
         else
           return 'die '.$cs;
       case 'T_EXTENDS':
-        return 'extends';
+        return ' extends';
       case 'T_FILE':
         return '__filename';
       case 'T_FOR':
+        return 'for ';
         return $this->parse_for($value);
       case 'T_FOREACH':
         return $this->parse_foreach($value);
       case 'T_FUNCTION':
         return $this->parse_function($value);
       case 'T_GLOBAL':
-        return 'global.';
+        return 'exports.';
       case 'T_IF':
         return $this->parse_if($value);
       case 'T_IMPLEMENTS':
         return '';
       case 'T_INCLUDE':
-        return 'eval include_all('.$this->parse_statement().')';
+        return 'require';//('.$this->parse_statement().')';
       case 'T_INCLUDE_ONCE':
-        return 'eval include_once('.$this->parse_statement().')';
+        return 'require';//('.$this->parse_statement().')';
       case 'T_INSTANCEOF':
         return 'instanceof';
       case 'T_INSTEADOF':
@@ -872,7 +973,7 @@ class Parser {
       case 'T_NEW':
         return 'new ';
       case 'T_PRINT':
-        return 'print '.$this->parse_statement();
+        return 'print';// '.$this->parse_statement();
       case 'T_PRIVATE':
         return $this->parse_member();
       case 'T_PUBLIC':
@@ -880,9 +981,9 @@ class Parser {
       case 'T_PROTECTED':
         return $this->parse_member();
       case 'T_REQUIRE':
-        return 'eval require_all('.$this->parse_statement().')';
+        return 'require';//('.$this->parse_statement().')';
       case 'T_REQUIRE_ONCE':
-        return 'eval require_once('.$this->parse_statement().')';
+        return 'require';//('.$this->parse_statement().')';
       case 'T_RETURN':
         return 'return '.$this->parse_expression();
       case 'T_STATIC':
@@ -891,10 +992,6 @@ class Parser {
         return "''+";
       case 'T_SWITCH':
         return $this->parse_switch($value);
-        
-        $parens = $this->parse_parens();
-        $this->parse_block($comment, $body);
-        return 'switch '.$comment.$body;
       case 'T_THROW':
         return 'throw' ;
       case 'T_TRY':
@@ -957,8 +1054,10 @@ class Parser {
         }
         $end = $this->pos;
         $body = $this->parse($start+1, $end-1, 1);
+        if (TRACE) echo "--- parse_blend()\n$body\n---";
         return TRUE;
       }
+      if ($tt == 0) break;
       // extract comments
       if ($tt == Parser::TT_COMMENT) {
         $comment .= $this->parse_comment($token, $value); 
@@ -970,7 +1069,7 @@ class Parser {
     }
     return FALSE;
   }
-  
+
 	/**
 	 * parse_member - define a member variable
    * or function on a class.
@@ -1014,8 +1113,10 @@ class Parser {
       if ($token == 'T_VARIABLE') {
         $this->var_def[$this->scope][$value] = 0;
       }
+      if ($tt == 0) break;
       $cs .= $this->parse_token($tt, $token, $value);
       $tt = $this->get_next_token($token, $value);
+      if ($tt == 0) break;
     }
     $this->arg_def = FALSE;
     if ($cs == '') {
@@ -1100,9 +1201,10 @@ class Parser {
           if ($token == 'T_ARRAY') $array_def = TRUE;
           if (($value == PHP_EOL) && ($array_def == FALSE)) $token = '';
         
+          if ($tt == 0) break;
           $cs .= $this->parse_token($tt, $token, $value);
           $tt = $this->get_next_token($token, $value);
-          
+
         }
     }
 		return $ternary ? 'if '.$cs : $cs;
@@ -1162,6 +1264,7 @@ class Parser {
     $cs = '';
     $tt = $this->get_next_token($token, $value);
     while ($token != ';') {
+      if ($tt == 0) break;
       $cs .= $this->parse_token($tt, $token, $value);
       $tt = $this->get_next_token($token, $value);
     }
@@ -1189,6 +1292,7 @@ class Parser {
     $tt = $this->get_token($token, $value);
     
     while ($token != $eq) {
+        if ($tt == 0) break;
         $cs .= $this->parse_token($tt, $token, $value);
         $tt = $this->get_next_token($token, $value);
     }
@@ -1243,9 +1347,11 @@ class Parser {
           $this->get_next_token($next_token, $next_value);
           $this->put_back();
           if ($next_value != PHP_EOL)
+            if ($tt == 0) break;
             $cs .= $this->parse_token($tt, $token, $value);
         }
         else {
+          if ($tt == 0) break;
           $cs .= $this->parse_token($tt, $token, $value);
         }
       }
@@ -1283,6 +1389,7 @@ class Parser {
     while (!$done) {
       if ($token == 'T_CASE') {
         $tt = $this->get_next_token($token, $value);
+        if ($tt == 0) break;
         $cs[] = $this->parse_token($tt, $token, $value);
         $this->is_next_token(':', TRUE);
         
@@ -1331,7 +1438,7 @@ class Parser {
       if ($tt != Parser::TT_IDENTIFIER) {
         throw new Exception("Expected IDENTIFIER, found $value");
       }
-      $cs .= 'extends '.$value;
+      $cs .= ' extends '.$value;
     }
     else {
       $this->put_back();
@@ -1339,6 +1446,7 @@ class Parser {
 
 		$tt = $this->get_next_token($token, $value);
 		while ($token != '{') {
+      if ($tt == 0) break;
 			$cs .= $this->parse_token($tt, $token, $value);
 			$tt = $this->get_next_token($token, $value);
 		}
@@ -1353,6 +1461,8 @@ class Parser {
 		}
 		$end = $this->pos;
 		$cs .= $this->parse($start+1, $end-1, 1);
+		$cs .= "\n\nregister_class '{$this->class_name}', {$this->class_name}";
+		$cs .= "\nmodule.exports = {$this->class_name}";
     $this->class_name = '';
 		return $cs;
 
@@ -1395,6 +1505,10 @@ class Parser {
     /*
      * for (expr1; expr2; expr3)
      *     statement
+     *
+     *
+     *  for
+     *
      */
     
   }    
@@ -1425,7 +1539,7 @@ class Parser {
       $arrow = '->';
     }
     else {
-      $cs = "exports.$value = ";
+      $cs = "exports.$value = $value = ";
       $arrow = '->';
     }
     $this->func_name = $value;
@@ -1458,10 +1572,12 @@ class Parser {
     $with_key = FALSE;
     $key = '';
     $this->is_next_token('(', TRUE);
-    $tt = $this->get_next_token($token, $array);
+    $tt = $this->get_next_token($token, $value);
+    $array = '';
 		while ($token != 'T_AS') {
-			$array = $this->parse_token($tt, $token, $value);
-			$tt = $this->get_next_token($token, $array);
+      if ($tt == 0) break;
+			$array .= $this->parse_token($tt, $token, $value);
+			$tt = $this->get_next_token($token, $value);
 		}
 //    if ($token == 'T_ARRAY') {
 //      $array = $this->parse_token($tt, $token, $value);
@@ -1481,7 +1597,7 @@ class Parser {
     $this->is_next_token(')', TRUE);
     
     if ($with_key == TRUE) {
-      $cs = "for $value, $key in $array";
+      $cs = "for $key, $value of $array";
     }
     else {
       $cs = "for $value in $array";
@@ -1530,6 +1646,7 @@ class Parser {
 		$cs = '';
 		$tt = $this->get_next_token($token, $value);
 		while ($token != ')') {
+      if ($tt == 0) break;
 			$cs .= $this->parse_token($tt, $token, $value);
 			$tt = $this->get_next_token($token, $value);
 		}
@@ -1553,6 +1670,7 @@ class Parser {
 		$cs = '';
 		$tt = $this->get_next_token($token, $value);
 		while ($token != ')') {
+      if ($tt == 0) break;
 			$cs .= $this->parse_token($tt, $token, $value);
 			$tt = $this->get_next_token($token, $value);
 		}
@@ -1576,6 +1694,7 @@ class Parser {
 		$cs = '';
 		$tt = $this->get_next_token($token, $value);
 		while ($token != ')') {
+      if ($tt == 0) break;
 			$cs .= $this->parse_token($tt, $token, $value);
 			$tt = $this->get_next_token($token, $value);
 		}
@@ -1600,7 +1719,7 @@ class Parser {
     
     if ($this->scope == Parser::SCOPE_CLASS) {
       $tt = $this->get_next_token($token, $value);
-      return "@$value = @$value ? ";
+      return "@$value = @$value ? {}";
       
     }
     else {
@@ -1608,11 +1727,11 @@ class Parser {
 
       $tt = $this->get_next_token($token, $value);
       if ($this->is_next_token('=')) {
-        return "exports.$value = exports.$value ? ";
+        return "exports.$value = $value ? {}";
       }
       else {
         $this->put_back();
-        return "exports.$value = exports.$value ? {}";
+        return "exports.$value = $value ? {}";
       }
     }
   }
@@ -1632,6 +1751,7 @@ class Parser {
     // skip ahead to opening brace
     $tt = $this->get_next_token($token, $value);
     while ($token != '{') {
+      if ($tt == 0) break;
       $cs[] = $this->parse_token($tt, $token, $value);
       $tt = $this->get_next_token($token, $value);
     }
@@ -1674,6 +1794,7 @@ class Parser {
           $this->brace--;
         }
       }
+      if ($tt == 0) break;
       $cs[] = $this->parse_token($tt, $token, $value);
       $tt = $this->get_next_token($token, $value);
 
@@ -1683,7 +1804,7 @@ class Parser {
   }
   
 	/**
-	 * parse_var - 
+	 * parse_var - Member variables
 	 *
 	 * @param string $value
 	 * @return string output
@@ -1691,8 +1812,9 @@ class Parser {
   function parse_var() {
     
     if (TRACE) echo "--- parse_var()\n";
-    
+
     $tt = $this->get_next_token($token, $value);
+    $value = substr($value,1);
     if ($this->is_next_token(';')) {
       $this->put_back();
 			return $value.': {}';

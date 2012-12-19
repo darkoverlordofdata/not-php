@@ -1,20 +1,12 @@
 {
   "name": "not-php",
   "description": "php2coffee + php style helpers for node",
-  "version": "0.2.0",
+  "version": "0.1.0",
   "author": "Bruce Davidson <darkoverlordofdata@gmail.com>",
   "repository": "git://github.com/darkoverlordofdata/not-php",
   "main": "lib/not-php.coffee",
   "bin": {"php2coffee": "./bin/php2coffee"},
   "dependencies": {
-  },
-  "scripts": {
-    "test": "cake test"
-  },
-  "devDependencies": {
-    "chai": "*",
-    "mocha": "*",
-    "async": "*"
   },
   "engines": {
     "node": "*"
