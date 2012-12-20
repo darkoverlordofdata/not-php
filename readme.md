@@ -22,12 +22,11 @@ Extracted from my Exspresso project
   and so will act as a drop in replacement for many php api functions. You <br />
   will have to update arguments for node style async calls, where appropriate.
 
-so code like this:
+Example:
 
-    forgotten_password_check : ($code) ->
-      $profile = @where('forgotten_password_code', $code).users().row()# pass the code to profile
+    $profile = @where('forgotten_password_code', $code).users().row()# pass the code to profile
 
-is changed to:
+Becomes:
 
     @where('forgotten_password_code', $code).users ($err, $users) =>
 
@@ -37,17 +36,18 @@ is changed to:
 
 ## Known Issues
 
+  Unit tests are not compete. <br />
   At this point, about 98% of php code is correctly converted. <br />
   But some things must be manually corrected. <br />
 
   <strong>Node</strong> does not fully support arguments by reference. <br >
   This mainly affects preg_match:
 
-  example:
+  Example:
 
     if preg_match($pattern, $subject, $matches) ...
 
-  must be changed to
+  Correction:
 
     $matches = preg_match($pattern, $subject)
     if $matches? ...
@@ -55,29 +55,21 @@ is changed to:
   <strong>Some</strong> nested literal object constructs are mis-tranlsated, <br />
   and will need to be manually corrected. <br />
 
-  example:
+  Example:
 
-			$this->data['identity'] = array('name' => 'identity',
-				'id' => 'identity',
-				'type' => 'text',
-				'value' => $this->form_validation->set_value('identity'),
-			);
+    @data['identity'] = 'name':'identity',
+      'id':'identity',
+      'type':'text',
+      'value':@form_validation.set_value('identity',
+    )
 
-  is incorrectly tranlated as
+  Correction:
 
-      @data['identity'] = 'name':'identity',
-        'id':'identity',
-        'type':'text',
-        'value':@form_validation.set_value('identity',
-      )
-
-  So, you will correct it thusly:
-
-      @data['identity'] =
-        'name':'identity',
-        'id':'identity',
-        'type':'text',
-        'value':@form_validation.set_value('identity')
+    @data['identity'] =
+      'name':'identity',
+      'id':'identity',
+      'type':'text',
+      'value':@form_validation.set_value('identity')
 
 ## Options
 

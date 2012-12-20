@@ -7,6 +7,9 @@
   "main": "lib/not-php.coffee",
   "bin": {"php2coffee": "./bin/php2coffee"},
   "dependencies": {
+    "format-number": "*",
+    "glob": "*",
+    "sprintf": "*"
   },
   "scripts": {
     "test": "cake test"
