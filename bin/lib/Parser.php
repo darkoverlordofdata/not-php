@@ -90,7 +90,7 @@ class Parser {
     'T_CLASS'                     => Parser::TT_KEYWORD,
     'T_CLASS_C'                   => Parser::TT_IGNORE,
     'T_CLONE'                     => Parser::TT_KEYWORD,
-    'T_CLOSE_TAG'                 => Parser::TT_IGNORE,
+    'T_CLOSE_TAG'                 => Parser::TT_MARKUP,
     'T_COMMENT'                   => Parser::TT_COMMENT,
     'T_CONCAT_EQUAL'              => Parser::TT_DELIMITER,
     'T_CONST'                     => Parser::TT_KEYWORD,
@@ -292,7 +292,12 @@ DOC;
       $cs = $this->parse(0, count($this->tokens));
       $cs = str_replace('parent::__construct', 'super', $cs);
 
-      return $header.$cs;
+      if (HTML) {
+        return $cs;
+      }
+      else {
+        return $header.$cs;
+      }
     }
     catch (Exception $e) {
 
@@ -317,13 +322,21 @@ DOC;
      */
     $src = array();
     foreach (explode(PHP_EOL, file_get_contents($path)) as $line) {
-      $src[] = trim($line); 
+      if (HTML) {
+        $src[] = $line;
+      }
+      else {
+        $src[] = trim($line);
+      }
     }
     /*
      * Generate tokens using the built-in php lexer
      */
     $txt = implode(PHP_EOL, $src);
     $txt = str_replace('**/', '*/', $txt);
+    $txt = str_replace('<?php echo', '<?=', $txt);
+
+
 		$tokens = token_get_all($txt);
     /*
      * Normalize whitespace: one character per token
@@ -731,7 +744,7 @@ DOC;
       case 'T_SR_EQUAL':
         return '>>=';
       case 'T_START_HEREDOC':
-        return '<<<';
+        return '"""';
       case 'T_WHITESPACE':
         if ($value == PHP_EOL) {
           $value .= str_repeat(TABS, $this->brace);
@@ -814,7 +827,7 @@ DOC;
 	/**
 	 * parse_markup - 
    * 
-   * TODO: Map php view template to .ejs/.eco format
+   * TODO: Map php view template to .eco format
 	 *
 	 * @param string $value
 	 * @return string output
@@ -822,9 +835,15 @@ DOC;
   function parse_markup($token, $value) {
 
     if (TRACE) echo "--- parse_markup($token, $value)\n";
+
+    switch($token) {
+      case 'T_INLINE_HTML':         return $value;
+      case 'T_OPEN_TAG':            return '<% ';
+      case 'T_OPEN_TAG_WITH_ECHO':  return '<%- ';
+      case 'T_CLOSE_TAG':           return ' %>';
+    }
     return '';
-    
-  }  
+  }
 
 	/**
 	 * parse_number - 
@@ -914,17 +933,17 @@ DOC;
       case 'T_ENDDECLARE':
         return '';
       case 'T_ENDFOR':
-        return '';
+        return 'end';
       case 'T_ENDFOREACH':
-        return '';
+        return 'end';
       case 'T_ENDIF':
-        return '';
+        return 'end';
       case 'T_ENDSWITCH':
-        return '';
+        return 'end';
       case 'T_ENDWHILE':
         return '';
       case 'T_END_HEREDOC':
-        return '';
+        return '"""';
       case 'T_EVAL':
         return 'eval'.$this->parse_parens();
       case 'T_EXIT':
@@ -1027,7 +1046,13 @@ DOC;
    *    body;
    *    body;
    *  }
-   * 
+   *
+   *  keyword (...) : ?>
+   *  ...
+   *  <?php end<keyword> ?>
+   *
+   *
+   *
 	 * @return string output
 	 */
   function parse_block(& $comment, & $body) {
@@ -1041,6 +1066,12 @@ DOC;
     $tt = $this->get_next_token($token, $value);
     // find the next semicolon.
     while ($token != ';') {
+
+      // found alternative syntax - :
+      if ($token == ':') {
+        $body = ':'
+        return;
+      }
       
       // found brace first
       if ($token == '{') {
@@ -1055,7 +1086,7 @@ DOC;
         $end = $this->pos;
         $body = $this->parse($start+1, $end-1, 1);
         if (TRACE) echo "--- parse_blend()\n$body\n---";
-        return TRUE;
+        return;
       }
       if ($tt == 0) break;
       // extract comments
@@ -1067,7 +1098,7 @@ DOC;
       }
       $tt = $this->get_next_token($token, $value);
     }
-    return FALSE;
+    return;
   }
 
 	/**
@@ -1461,7 +1492,6 @@ DOC;
 		}
 		$end = $this->pos;
 		$cs .= $this->parse($start+1, $end-1, 1);
-		$cs .= "\n\nregister_class '{$this->class_name}', {$this->class_name}";
 		$cs .= "\nmodule.exports = {$this->class_name}";
     $this->class_name = '';
 		return $cs;

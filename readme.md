@@ -36,12 +36,9 @@ Becomes:
 
 ## Known Issues
 
-  Unit tests are not compete. <br />
-  At this point, about 98% of php code is correctly converted. <br />
-  But some things must be manually corrected. <br />
+### preg_match
 
-  <strong>Node</strong> does not fully support arguments by reference. <br >
-  This mainly affects preg_match:
+  Node does not fully support arguments by reference. <br >
 
   Example:
 
@@ -52,7 +49,9 @@ Becomes:
     $matches = preg_match($pattern, $subject)
     if $matches? ...
 
-  <strong>Some</strong> nested literal object constructs are mis-tranlsated, <br />
+### arrays
+
+  Some nested literal object constructs are mis-tranlsated, <br />
   and will need to be manually corrected. <br />
 
   Example:
@@ -71,15 +70,39 @@ Becomes:
       'type':'text',
       'value':@form_validation.set_value('identity')
 
+### .eco templates
+
+  Eco syntax require a this (@) operator for helpers and variables <br />
+
+  Example:
+
+		  <td><%- anchor("auth/edit_user/" + $user.id, 'Edit') %></td>
+
+  Correction:
+
+			<td><%- @anchor("auth/edit_user/" + @user.id, 'Edit') %></td>
+
+  Note that the open coffee tag defaults to <%-, which matches the php default behaviour. <br />
+  Change to <%= as appropriate to escape output.
+
+## To Do
+
+  * Complete the test suite
+  * Complete Eco templates - address the this (@) operator issue.
+    * prepend all external variables
+    * prepend all external functions not in the compatability layer.
+
 ## Options
 
     Usage: php2coffee [OPTIONS] PATH [DESTINATION]
 
-    -c, --config        config files (declares module globals)
     -h, --help          display this help
-    -j. --javascript    compiles resulting .coffee file
+    -j, --javascript    compiles resulting .coffee file
+    -m, --markup        compiles into .eco markup template
     -r, --recursive     recurse source path
     -t, --trace         trace output
+    -T, --tabs          use tab character in output (default is spaces)
+    -d, --dump          dump of tokens
 
 ## License
 
