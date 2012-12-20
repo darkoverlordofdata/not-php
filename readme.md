@@ -10,17 +10,16 @@ Extracted from my Exspresso project
 
 ## Quick Start
 
-  Port the php code to coffee-script. <br />
-  This will create the output file CodeIgniter.php.coffee: <br />
+  This will create the output file 'CodeIgniter.php.coffee'
 
     $ php2coffee CodeIgniter.php
 
 
 ## Next Steps
 
-  Tweak the resulting code. Not-php helper functions are declared globaly, <br />
-  and so will act as a drop in replacement for many php api functions. You <br />
-  will have to update arguments for node style async calls, where appropriate.
+  Tweak the resulting code. Not-php helper functions are declared globaly, and so will act as a drop in
+  replacement for many php api functions. You will have to update arguments for node style async calls,
+  where appropriate.
 
 Example:
 
@@ -38,7 +37,7 @@ Becomes:
 
 ### preg_match
 
-  Node does not fully support arguments by reference. <br >
+  Node does not fully support arguments by reference.
 
   Example:
 
@@ -51,8 +50,7 @@ Becomes:
 
 ### arrays
 
-  Some nested literal object constructs are mis-tranlsated, <br />
-  and will need to be manually corrected. <br />
+  Some nested literal object constructs are mis-tranlsated, and will need to be manually corrected.
 
   Example:
 
@@ -72,17 +70,17 @@ Becomes:
 
 ### .eco templates
 
-  Eco syntax require a this (@) operator for helpers and variables <br />
+  Eco syntax require a this (@) operator for helpers and variables
 
   Example:
 
-		  <td><%- anchor("auth/edit_user/" + $user.id, 'Edit') %></td>
+      <td><%- anchor("auth/edit_user/" + $user.id, 'Edit') %></td>
 
   Correction:
 
-			<td><%- @anchor("auth/edit_user/" + @user.id, 'Edit') %></td>
+      <td><%- @anchor("auth/edit_user/" + @user.id, 'Edit') %></td>
 
-  Note that the open coffee tag defaults to <%-, which matches the php default behaviour. <br />
+  Note that the open coffee tag defaults to <%-, which matches the php default behaviour.
   Change to <%= as appropriate to escape output.
 
 ## To Do
