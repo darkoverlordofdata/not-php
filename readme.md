@@ -1,8 +1,6 @@
 # this is your php on node (not-php)
 
-This is from an experimental project to port CodeIgniter
-to coffeescript, running on a node.js server.
-
+Extracted from my Exspresso project
 
 ## Installation
 
@@ -12,55 +10,74 @@ to coffeescript, running on a node.js server.
 
 ## Quick Start
 
-  Port the php code to coffee-script.
-  This will create the output file CodeIgniter.php.coffee:
+  Port the php code to coffee-script. <br />
+  This will create the output file CodeIgniter.php.coffee: <br />
 
     $ php2coffee CodeIgniter.php
 
-  Tweak the resulting code to declare the appropriate helper functions:
 
-    {define, defined} = require('not-php')
+## Next Steps
 
-    define 'TRUE', true
-    if ! defined('TRUE') then throw 'TRUE not defined'
+  Tweak the resulting code. Not-php helper functions are declared globaly, <br />
+  and so will act as a drop in replacement for many php api functions. You <br />
+  will have to update arguments for node style async calls, where appropriate.
 
-## Helpers
+so code like this:
 
-<table>
-    <thead>
-        <tr>
-            <th>Keywords</th>
-            <th>Description</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <th><code>constant</code></th>
-            <td>Return the value of the constant indicated by name.</td>
-        </tr>
-        <tr>
-            <th><code>define</code></th>
-            <td>Defines a named constant at runtime.</td>
-        </tr>
-        <tr>
-            <th><code>defined</code></th>
-            <td>Checks whether the given constant exists and is defined.</td>
-        </tr>
-        <tr>
-            <th><code>file_exists</code></th>
-            <td>Checks whether a file or directory exists.  </td>
-        </tr>
-        <tr>
-            <th><code>is_dir</code></th>
-            <td>Tells whether the given filename is a directory. </td>
-        </tr>
-        <tr>
-            <th><code>realpath</code></th>
-            <td>Return the canonicalized absolute pathname.  </td>
-        </tr>
-    </tbody>
-</table>
+    forgotten_password_check : ($code) ->
+      $profile = @where('forgotten_password_code', $code).users().row()# pass the code to profile
 
+is changed to:
+
+    @where('forgotten_password_code', $code).users ($err, $users) =>
+
+      if $err then return $next $err
+      $profile = $users.row()# pass the code to profile
+
+
+## Known Issues
+
+  At this point, about 98% of php code is correctly converted. <br />
+  But some things must be manually corrected. <br />
+
+  <strong>Node</strong> does not fully support arguments by reference. <br >
+  This mainly affects preg_match:
+
+  example:
+
+    if preg_match($pattern, $subject, $matches) ...
+
+  must be changed to
+
+    $matches = preg_match($pattern, $subject)
+    if $matches? ...
+
+  <strong>Some</strong> nested literal object constructs are mis-tranlsated, <br />
+  and will need to be manually corrected. <br />
+
+  example:
+
+			$this->data['identity'] = array('name' => 'identity',
+				'id' => 'identity',
+				'type' => 'text',
+				'value' => $this->form_validation->set_value('identity'),
+			);
+
+  is incorrectly tranlated as
+
+      @data['identity'] = 'name':'identity',
+        'id':'identity',
+        'type':'text',
+        'value':@form_validation.set_value('identity',
+      )
+
+  So, you will correct it thusly:
+
+      @data['identity'] =
+        'name':'identity',
+        'id':'identity',
+        'type':'text',
+        'value':@form_validation.set_value('identity')
 
 ## Options
 
@@ -71,13 +88,6 @@ to coffeescript, running on a node.js server.
     -j. --javascript    compiles resulting .coffee file
     -r, --recursive     recurse source path
     -t, --trace         trace output
-
-
-
-
-
-
-
 
 ## License
 
