@@ -8,6 +8,8 @@ Extracted from my Exspresso project
 
     $ npm install git://github.com/darkoverlordofdata/not-php.git
 
+    You also need to have php installed. Php2coffee is written in php to leverage the Zend lexer.
+
 ## Quick Start
 
   This will create the output file 'CodeIgniter.php.coffee'
