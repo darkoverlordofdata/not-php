@@ -1,14 +1,14 @@
 # this is your php on node (not-php)
 
-Extracted from my Exspresso project
+Port PHP to Coffee-Script
+
+Extracted from my [Exspresso] (https://github.com/darkoverlordofdata/exspresso) project
 
 ## Installation
 
-    $ npm install ./not-php.tar.gz
+    $ npm install not-php
 
-    $ npm install git://github.com/darkoverlordofdata/not-php.git
-
-    You also need to have php installed. Php2coffee is written in php to leverage the Zend lexer.
+You also need to have php installed. Php2coffee is written in php to leverage the Zend lexer.
 
 ## Quick Start
 
@@ -23,6 +23,7 @@ Extracted from my Exspresso project
   replacement for many php api functions. You will have to update arguments for node style async calls,
   where appropriate.
 
+
 Example:
 
     $profile = @where('forgotten_password_code', $code).users().row()# pass the code to profile
@@ -36,10 +37,10 @@ Becomes:
 
 
 ## Known Issues
-
 ### preg_match
 
   Node does not fully support arguments by reference.
+
 
   Example:
 
@@ -53,6 +54,7 @@ Becomes:
 ### arrays
 
   Some nested literal object constructs are mis-tranlsated, and will need to be manually corrected.
+
 
   Example:
 
@@ -73,6 +75,7 @@ Becomes:
 ### .eco templates
 
   Eco syntax require a this (@) operator for helpers and variables
+
 
   Example:
 
