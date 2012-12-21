@@ -169,11 +169,11 @@ exports.array_slice = ($array, $offset, $length = null) ->
 
 exports.array_splice = ($input, $offset, $length = 0, $replacement = null) ->
 
-    if $length is 0 then $length = $input.length
-    if $replacement is null
-      $input.splice($offset, $length)
-    else
-      Array::splice.apply($input, [$offset, $length].concat($replacement))
+  if $length is 0 then $length = $input.length
+  if $replacement is null
+    $input.splice($offset, $length)
+  else
+    Array::splice.apply($input, [$offset, $length].concat($replacement))
 
 
 ## --------------------------------------------------------------------
@@ -298,10 +298,10 @@ exports.file_exists = file_exists = fs.existsSync || path.existsSync
 
 #exports.file_exists = file_exists = ($path) ->
 
-  #if fs.existsSync?
-  #  fs.existsSync($path)
-  #else
-  #  path.existsSync($path)
+#if fs.existsSync?
+#  fs.existsSync($path)
+#else
+#  path.existsSync($path)
 
 ## --------------------------------------------------------------------
 
@@ -453,14 +453,14 @@ exports.parse_url = ($url) ->
     [$username, $password] = ['','']
 
   return {
-    scheme:     $p.protocol.split(':')[0]
-    host:       $p.hostname
-    port:       $p.port
-    user:       $username
-    pass:       $password
-    path:       $p.pathname
-    query:      $p.query
-    fragment:   $p.hash
+  scheme:     $p.protocol.split(':')[0]
+  host:       $p.hostname
+  port:       $p.port
+  user:       $username
+  pass:       $password
+  path:       $p.pathname
+  query:      $p.query
+  fragment:   $p.hash
   }
 
 createRegExp = ($pattern) ->
@@ -859,12 +859,22 @@ exports.sha1 = ($str, $raw_output = false) ->
 exports.gettype = ($var) -> typeof $var
 
 
-exports.ip2long = ($ip_address) ->
+exports.ip2long = ip2long = ($ip_address) ->
   $ip = array_pad(explode('.', $ip_address), 4, 0)
   $l = 0
   for $i in [0..3]
     $l = ($l * 256) + $ip[$i]
   $l
+
+exports.inet_pton = ($ip_address) ->
+
+  buff = new Buffer(4)
+  ui8 = new Uint8Array(buff)
+  $ip = array_pad(explode('.', $ip_address), 4, '0')
+  for $i in [0..3]
+    ui8[$i] = parseInt($ip[$i], 10)
+  return buff.toString()
+
 
 exports.uniqid = ($prefix = '', $more_entropy = false) ->
 

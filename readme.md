@@ -1,4 +1,4 @@
-# this is your php on node (not-php)
+# this is your php on node
 
 Port PHP to Coffee-Script
 
