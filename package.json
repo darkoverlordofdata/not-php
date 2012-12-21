@@ -1,7 +1,7 @@
 {
   "name": "not-php",
   "description": "php2coffee + php style helpers for node",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "author": "Bruce Davidson <darkoverlordofdata@gmail.com>",
   "repository": "git://github.com/darkoverlordofdata/not-php",
   "main": "lib/not-php.coffee",
