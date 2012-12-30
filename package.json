@@ -4,7 +4,7 @@
   "version": "0.3.5",
   "author": "Bruce Davidson <darkoverlordofdata@gmail.com>",
   "repository": "git://github.com/darkoverlordofdata/not-php",
-  "main": "lib/not-php.coffee",
+  "main": "lib/index.coffee",
   "bin": {"php2coffee": "./bin/php2coffee"},
   "dependencies": {
     "format-number": "*",
