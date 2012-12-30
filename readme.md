@@ -19,16 +19,18 @@ You also need to have php installed. Php2coffee is written in php to leverage th
 
 ## Next Steps
 
-  Tweak the resulting code. Not-php helper functions are declared globaly, and so will act as a drop in
-  replacement for many php api functions. You will have to update arguments for node style async calls,
-  where appropriate.
+  Tweak the resulting code. Not-php helper functions may be declared globaly, and so will act as a drop in
+  replacement for many php api functions.
 
+    require('not-php').export global
+    x = implode('+', process.argv)
 
-Example:
+  You will have to update arguments for node style async calls,
+  where appropriate, so this:
 
     $profile = @where('forgotten_password_code', $code).users().row()# pass the code to profile
 
-Becomes:
+  Becomes this:
 
     @where('forgotten_password_code', $code).users ($err, $users) =>
 

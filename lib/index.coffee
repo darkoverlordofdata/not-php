@@ -889,6 +889,8 @@ exports.uniqid = ($prefix = '', $more_entropy = false) ->
 # Export module to the global namespace
 #
 #
-for $name, $body of module.exports
-  exports.define $name, $body
+exports.export = ($scope = global) ->
+  for $name, $body of module.exports
+    exports.define $name, $body, $scope
+  return
 
