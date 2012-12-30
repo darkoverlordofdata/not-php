@@ -1069,7 +1069,7 @@ DOC;
 
       // found alternative syntax - :
       if ($token == ':') {
-        $body = ':'
+        $body = ':';
         return;
       }
       
