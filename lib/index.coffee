@@ -1,12 +1,12 @@
 #+--------------------------------------------------------------------+
-#| lib.coffee
+#| index.coffee
 #+--------------------------------------------------------------------+
 #| Copyright DarkOverlordOfData (c) 2012
 #+--------------------------------------------------------------------+
 #|
-#| This file is a part of Exspresso
+#| This file is a part of not-php
 #|
-#| Exspresso is free software; you can copy, modify, and distribute
+#| Not-php is free software; you can copy, modify, and distribute
 #| it under the terms of the MIT License
 #|
 #+--------------------------------------------------------------------+
@@ -19,7 +19,7 @@ path            = require('path')                       # File path utilities
 querystring     = require('querystring')                # Utilities for dealing with query strings.
 url             = require('url')                        # Utilities for URL resolution and parsing.
 util            = require('util')                       # misc
-crypto          = require('crypto')
+crypto          = require('crypto')                     # super secret stuff
 
 
 exports.define = (name, value, scope = global) ->
@@ -46,8 +46,6 @@ exports.constant = (name, scope = global) ->
   else
     return null
 
-
-#exports._classes = _classes = {}                        # class registry
 
 exports.die = ($message) ->
   console.log $message
@@ -295,13 +293,6 @@ exports.number_format = ($number, $decimals = 0, $dec_point = '.', $thousands_se
 ## --------------------------------------------------------------------
 
 exports.file_exists = file_exists = fs.existsSync || path.existsSync
-
-#exports.file_exists = file_exists = ($path) ->
-
-#if fs.existsSync?
-#  fs.existsSync($path)
-#else
-#  path.existsSync($path)
 
 ## --------------------------------------------------------------------
 

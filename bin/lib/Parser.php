@@ -6,9 +6,9 @@
 | Copyright DarkOverlordOfData (c) 2012
 +--------------------------------------------------------------------+
 |                                                                    
-| This file is a part of Exspresso
+| This file is a part of not-php
 |                                                                    
-| Exspresso is free software; you can copy, modify, and distribute
+| Not-php is free software; you can copy, modify, and distribute
 | it under the terms of the MIT License
 |                                                                    
 +--------------------------------------------------------------------+
