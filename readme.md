@@ -1,8 +1,10 @@
 # this is your php on node
 
-Port PHP to Coffee-Script
+Port your PHP code to Coffee-Script
 
-Extracted from my [Exspresso] (https://github.com/darkoverlordofdata/exspresso) project
+## Status
+
+v0.3.7 stable and in use by [Exspresso] (https://github.com/darkoverlordofdata/exspresso)
 
 ## Installation
 
@@ -19,13 +21,18 @@ You also need to have php installed. Php2coffee is written in php to leverage th
 
 ## Next Steps
 
-  Tweak the resulting code. Not-php helper functions may be declared globaly, and so will act as a drop in
-  replacement for many php api functions.
+  Use the not-php module as a drop in replacement for many php api functions:
+
+    lib = require('not-php')
+    x = lib.md5('bruce')
+
+Not-php helper functions may be declared globaly:
 
     require('not-php').export global
-    x = implode('+', process.argv)
+    y = md5('bruce')
 
-  You will have to update arguments for node style async calls,
+
+  Tweak the resulting code. You will have to update arguments for node style async calls,
   where appropriate, so this:
 
     $profile = @where('forgotten_password_code', $code).users().row()# pass the code to profile
