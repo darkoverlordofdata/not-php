@@ -739,7 +739,10 @@ exports.register_class = register_class = ($classname, $class) -> define $classn
 # @access public
 # @return	object
 #
-exports.get_class = get_class = ($classname) -> global[$classname]
+#exports.get_class = get_class = ($classname) -> global[$classname]
+exports.get_class = get_class = ($object = null) ->
+  $object = $object ? @
+  if $object::? and $object::constructor? and $object::constructor.name? then $object::constructor.name else ''
 
 exports.array = ($key, $value) ->
   $array = {}
@@ -880,8 +883,16 @@ exports.uniqid = ($prefix = '', $more_entropy = false) ->
 # Export module to the global namespace
 #
 #
-exports.export = ($scope = global) ->
+exports.export = ($scope = global, $extra = {}) ->
+
   for $name, $body of module.exports
     exports.define $name, $body, $scope
+
+  $defaults =
+    $_ENV:    get: -> process.env
+    $argv:    get: -> process.argv
+    $argc:    get: -> process.argv.length
+
+  Object.defineProperties $scope, array_merge($defaults, $extra)
   return
 

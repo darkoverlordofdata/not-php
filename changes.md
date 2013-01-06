@@ -7,4 +7,5 @@
   * 0.3.5 clean up sic references in comments - my ocd.
   * 0.3.6 fix 'cannot find module' error
   * 0.3.7 update status to stable. This is now the version used in Exspresso.
-
+  * 0.3.8 fix get_class to return string
+  * 0.3.8 publish compiled js, point test to ../src

@@ -1,10 +1,10 @@
 {
   "name": "not-php",
   "description": "php2coffee + php style helpers for node",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "author": "Bruce Davidson <darkoverlordofdata@gmail.com>",
   "repository": "git://github.com/darkoverlordofdata/not-php",
-  "main": "lib/index.coffee",
+  "main": "lib/index.js",
   "bin": {"php2coffee": "./bin/php2coffee"},
   "dependencies": {
     "format-number": "*",

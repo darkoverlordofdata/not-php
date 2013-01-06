@@ -16,13 +16,12 @@
 #   Tests for lib.coffee
 #
 #
-lib = require('../lib') #->  this is the module being tested  <-#
-
+lib = require('../src') #->  this is the module being tested  <-#
 ## --------------------------------------------------------------------
 
 # Test class for class_exists:
 
-class lib._classes.ScoobyDoo
+class ScoobyDoo
 
   whereAreYou: ->
 
