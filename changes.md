@@ -9,3 +9,4 @@
   * 0.3.7 update status to stable. This is now the version used in Exspresso.
   * 0.3.8 fix get_class to return string
   * 0.3.8 publish compiled js, point test to ../src
+  * 0.3.9 + cake build commandline
