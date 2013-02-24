@@ -4,7 +4,7 @@ Port your PHP code to Coffee-Script
 
 ## Status
 
-v0.3.10 stable and in use by [Exspresso] (https://github.com/darkoverlordofdata/exspresso)
+v0.3.12 stable and in use by [Exspresso] (https://github.com/darkoverlordofdata/exspresso)
 
 ## Installation
 

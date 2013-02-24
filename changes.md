@@ -17,5 +17,5 @@
   * 0.3.10 + preg_split
 
 ## 02/24/13 - bruce davidson
-  * 0.3.11 + preg_replace_callback
-  * 0.3.11 update preg_match_all
+  * 0.3.12 + preg_replace_callback
+  * 0.3.12 update preg_match_all
