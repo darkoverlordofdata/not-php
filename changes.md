@@ -10,3 +10,8 @@
   * 0.3.8 fix get_class to return string
   * 0.3.8 publish compiled js, point test to ../src
   * 0.3.9 + cake build commandline
+
+## 02/23/13 - bruce davidson
+  * 0.3.10 + array_filter
+  * 0.3.10 + array_pop
+  * 0.3.10 + preg_split

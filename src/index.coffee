@@ -59,6 +59,12 @@ exports.array_diff = ($array1, $array2) ->
     if $array2.indexOf($val) is -1 then $ret.push $val
   $ret
 
+
+
+exports.array_filter = ($input, $callback = null) ->
+  if $callback is null
+    return $item for $item in $input when Boolean($item) is true
+
 ## --------------------------------------------------------------------
 
 exports.array_keys = array_keys = ($input, $search = null) ->
@@ -144,6 +150,12 @@ __push = [].push
 exports.array_push = ($array, $var...) ->
 
   __push.apply $array, $var
+
+
+__pop = [].pop
+exports.array_pop = ($array) ->
+  __pop.apply $array
+
 
 # ----------------------------------------------------------
 
@@ -502,6 +514,24 @@ exports.preg_quote = ($str, $delimiter = '') ->
     if ".\+*?[^]$(){}=!<>|:-".indexOf($char) isnt -1
       $array[$i] = "\\"+$char
   $array.join()
+
+exports.PREG_SPLIT_NO_EMPTY       = 1
+exports.PREG_SPLIT_DELIM_CAPTURE  = 2
+exports.PREG_SPLIT_OFFSET_CAPTURE = 4
+
+exports.preg_split = ($pattern, $subject, $limit = -1, $flags = 0) ->
+
+  if $flags & PREG_SPLIT_OFFSET_CAPTURE
+    throw new Error('Unsupported feature: PREG_SPLIT_OFFSET_CAPTURE')
+
+  $result = $subject.split(createRegExp($pattern), $limit)
+
+  # PREG_SPLIT_DELIM_CAPTURE is the standard behaviour in js
+  # to disable this, just don't use capture...
+  if $flags & PREG_SPLIT_NO_EMPTY
+    $item for $item in $result when $item?
+  else
+    $result
 
 ## --------------------------------------------------------------------
 
