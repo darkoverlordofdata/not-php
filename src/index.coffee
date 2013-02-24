@@ -543,15 +543,38 @@ exports.preg_match = ($pattern, $subject) ->
 
 ## --------------------------------------------------------------------
 
+exports.PREG_PATTERN_ORDER    = 1
+exports.PREG_SET_ORDER        = 2
+exports.PREG_OFFSET_CAPTURE   = 4
+
 exports.preg_match_all = ($pattern, $subject) ->
 
   $regex = createRegExp($pattern)
   $matches = []
   while ($match = $regex.exec($subject)) isnt null
     $matches.push $match
-  $matches
+    return $matches if $flags is PREG_SET_ORDER
+    $x = $matches[0].length
+    $y = $matches[0][0].length
+    $result = []
+    for $i in [0...$y]
+      $result.push []
+      for $j in [0..$x]
+        $result[$i].push $matches[$j][$i]
+    $result
 
 
+exports.preg_replace_callback = ($pattern, $callback, $subject, $limit = -1) ->
+
+  $re = createRegExp($pattern)
+  if typeof $callback is 'string'
+    $func = global[$callback]
+  else
+    $object = $callback[0]
+    $method = $callback[1]
+    $func = $object[$method]
+
+  $subject.replace($re, $func, $limit)
 
 ## --------------------------------------------------------------------
 
