@@ -8,7 +8,9 @@ v0.3.12 stable and in use by [Exspresso] (https://github.com/darkoverlordofdata/
 
 ## Installation
 
-    $ npm install not-php
+```bash
+$ npm install not-php
+```
 
 You also need to have php installed. Php2coffee is written in php to leverage the Zend lexer.
 
@@ -16,33 +18,46 @@ You also need to have php installed. Php2coffee is written in php to leverage th
 
   This will create the output file 'CodeIgniter.php.coffee'
 
-    $ php2coffee CodeIgniter.php
+```bash
+$ php2coffee CodeIgniter.php
+```
 
 
 ## Next Steps
 
-  Use the not-php module as a drop in replacement for many php api functions:
+  Use the not-php module as a drop in replacement for many php api functions.
 
-    lib = require('not-php')
-    x = lib.md5('bruce')
 
-Not-php helper functions may be declared globaly:
+```CoffeeScript
+class Driver
 
-    require('not-php').export global
+  eval "#{$name} = #{$body}" for $name, $body of require('not-php')
+
+  ...
+  someMethod: ->
+
     y = md5('bruce')
+
+```
+
+
 
 
   Tweak the resulting code. You will have to update arguments for node style async calls,
   where appropriate, so this:
 
-    $profile = @where('forgotten_password_code', $code).users().row()# pass the code to profile
+```CoffeeScript
+  $profile = @where('forgotten_password_code', $code).users().row()# pass the code to profile
+```
 
   Becomes this:
 
-    @where('forgotten_password_code', $code).users ($err, $users) =>
+```CoffeeScript
+  @where('forgotten_password_code', $code).users ($err, $users) =>
 
-      if $err then return $next $err
-      $profile = $users.row()# pass the code to profile
+    if $err then return $next $err
+    $profile = $users.row()# pass the code to profile
+```
 
 
 ## Known Issues
@@ -53,12 +68,15 @@ Not-php helper functions may be declared globaly:
 
   Example:
 
-    if preg_match($pattern, $subject, $matches) ...
+```CoffeeScript
+  if preg_match($pattern, $subject, $matches) ...
+```
 
-  Correction:
+  Use this pattern:
 
-    $matches = preg_match($pattern, $subject)
-    if $matches? ...
+```CoffeeScript
+  if ($matches = preg_match($pattern, $subject))
+```
 
 ### arrays
 
@@ -67,19 +85,23 @@ Not-php helper functions may be declared globaly:
 
   Example:
 
-    @data['identity'] = 'name':'identity',
-      'id':'identity',
-      'type':'text',
-      'value':@form_validation.set_value('identity',
-    )
+```CoffeeScript
+  @data['identity'] = 'name':'identity',
+    'id':'identity',
+    'type':'text',
+    'value':@form_validation.set_value('identity',
+  )
+```
 
   Correction:
 
-    @data['identity'] =
-      'name':'identity',
-      'id':'identity',
-      'type':'text',
-      'value':@form_validation.set_value('identity')
+```CoffeeScript
+  @data['identity'] =
+    'name':'identity',
+    'id':'identity',
+    'type':'text',
+    'value':@form_validation.set_value('identity')
+```
 
 ### .eco templates
 
@@ -88,11 +110,15 @@ Not-php helper functions may be declared globaly:
 
   Example:
 
-      <td><%- anchor("auth/edit_user/" + $user.id, 'Edit') %></td>
+```eco
+  <td><%- anchor("auth/edit_user/" + $user.id, 'Edit') %></td>
+```
 
   Correction:
 
-      <td><%- @anchor("auth/edit_user/" + @user.id, 'Edit') %></td>
+```eco
+  <td><%- @anchor("auth/edit_user/" + @user.id, 'Edit') %></td>
+```
 
   Note that the open coffee tag defaults to <%-, which matches the php default behaviour.
   Change to <%= as appropriate to escape output.
@@ -106,15 +132,17 @@ Not-php helper functions may be declared globaly:
 
 ## Options
 
-    Usage: php2coffee [OPTIONS] PATH [DESTINATION]
+```bash
+Usage: php2coffee [OPTIONS] PATH [DESTINATION]
 
-    -h, --help          display this help
-    -j, --javascript    compiles resulting .coffee file
-    -m, --markup        compiles into .eco markup template
-    -r, --recursive     recurse source path
-    -t, --trace         trace output
-    -T, --tabs          use tab character in output (default is spaces)
-    -d, --dump          dump of tokens
+-h, --help          display this help
+-j, --javascript    compiles resulting .coffee file
+-m, --markup        compiles into .eco markup template
+-r, --recursive     recurse source path
+-t, --trace         trace output
+-T, --tabs          use tab character in output (default is spaces)
+-d, --dump          dump of tokens
+```
 
 ## License
 

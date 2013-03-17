@@ -21,4 +21,5 @@
   * 0.3.12 update preg_match_all
 
 ## 03/16/13 - bruce davidson
-  * 0.3.13 - export, expose createRegExp
+  * 0.3.13 - Bye Bye global use
+  * 0.3.14 - Update documentation for non global use
