@@ -19,3 +19,6 @@
 ## 02/24/13 - bruce davidson
   * 0.3.12 + preg_replace_callback
   * 0.3.12 update preg_match_all
+
+## 03/16/13 - bruce davidson
+  * 0.3.13 - export, expose createRegExp

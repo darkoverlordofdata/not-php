@@ -466,7 +466,7 @@ exports.parse_url = ($url) ->
   fragment:   $p.hash
   }
 
-createRegExp = ($pattern) ->
+exports.createRegExp = ($pattern) ->
 
   $delim = $pattern.charAt(0)
   $end = $pattern.lastIndexOf($delim)
@@ -936,16 +936,16 @@ exports.uniqid = ($prefix = '', $more_entropy = false) ->
 # Export module to the global namespace
 #
 #
-exports.export = ($scope = global, $extra = {}) ->
-
-  for $name, $body of module.exports
-    exports.define $name, $body, $scope
-
-  $defaults =
-    $_ENV:    get: -> process.env
-    $argv:    get: -> process.argv
-    $argc:    get: -> process.argv.length
-
-  Object.defineProperties $scope, array_merge($defaults, $extra)
-  return
+#exports.export = ($scope = global, $extra = {}) ->
+#
+#  for $name, $body of module.exports
+#    exports.define $name, $body, $scope
+#
+#  $defaults =
+#    $_ENV:    get: -> process.env
+#    $argv:    get: -> process.argv
+#    $argc:    get: -> process.argv.length
+#
+#  Object.defineProperties $scope, array_merge($defaults, $extra)
+#  return
 
