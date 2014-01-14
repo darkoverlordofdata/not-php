@@ -527,7 +527,7 @@ DOC;
       return TRUE;
     }
     if ($raise == TRUE) {
-      throw new Exception("Expected '$token', found '$next_token'");
+      throw new Exception("Expected '$token', found '$next_token' at $this->pos");
     }
     return FALSE;
     
@@ -1012,9 +1012,9 @@ DOC;
       case 'T_SWITCH':
         return $this->parse_switch($value);
       case 'T_THROW':
-        return 'throw' ;
+        return 'throw ' ;
       case 'T_TRY':
-        return 'try '.$this->parse_parens();
+        return 'try ';//.$this->parse_parens();
       case 'T_UNSET':
         return $this->parse_unset($value);
       case 'T_USE':

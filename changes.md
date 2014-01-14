@@ -23,3 +23,6 @@
 ## 03/16/13 - bruce davidson
   * 0.3.13 - Bye Bye global use
   * 0.3.14 - Update documentation for non global use
+  * 
+ ## 01/13/14 - bruce davidson
+  * 0.3.15 -  issue #1 - fixed T_TRY handling
